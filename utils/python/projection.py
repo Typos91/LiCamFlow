@@ -23,7 +23,7 @@ def get_T_Lid_cam_Mocap(T_Mo_Cam, T_Mo_Lid):
     T_Lid_cam = np.linalg.inv(T_Mo_Cam)@T_Mo_Lid
     return T_Lid_cam
 
-def project_launch_dataset(png_rotated:bool, path_to_dataset:str):
+def project_launch_dataset(path_to_dataset:str, sequence:str):
     """
     Description:
     The `project_launch_dataset` function projects LiDAR point clouds onto synchronized camera images. It aligns LiDAR data with 
@@ -35,13 +35,9 @@ def project_launch_dataset(png_rotated:bool, path_to_dataset:str):
     Outputs:
     - Displays concatenated images with projected point clouds.
     """
-    # Rotation to get the images in their actual orientation
-    R_z_90_clockwise = np.array([[0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-    R_z_90_counterclockwise = np.array([[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-    map_pcl_rotation = {201:R_z_90_counterclockwise, 202:R_z_90_clockwise, 203:R_z_90_clockwise, 204:R_z_90_counterclockwise, 205:R_z_90_counterclockwise}
-    launch_file = "launch_2026-03-12_16-36"
-    LiDARs_path = f'{path_to_dataset}/dataset_raw/{launch_file}/lidars/full_pointclouds_txt/full_extracted/'
-    json_file = f"{path_to_dataset}/dataset_raw/{launch_file}/camera_parameters.json"
+    sequence_file = sequence
+    LiDARs_path = f'{path_to_dataset}/{sequence_file}/lidars/full_pointclouds_txt/full_extracted/'
+    json_file = f"{path_to_dataset}/{sequence_file}/camera_parameters.json"
     file_encoding = '.pcd'
     cam_idxx = [201, 202, 203, 204, 205]
     images_choosen = []
@@ -49,7 +45,7 @@ def project_launch_dataset(png_rotated:bool, path_to_dataset:str):
         LiDAR_pcl_names = []
         LiDAR_data = []
         cam_idx = idx
-        images_path = f'{path_to_dataset}/dataset_raw/{launch_file}/png_images/cam_{cam_idx}/'
+        images_path = f'{path_to_dataset}/{sequence_file}/png_images/cam_{cam_idx}/'
         images = sorted(os.listdir(images_path))
         for file_name in sorted(os.listdir(LiDARs_path)):
             if file_name.endswith(file_encoding):
@@ -61,30 +57,8 @@ def project_launch_dataset(png_rotated:bool, path_to_dataset:str):
         print("Size of LiDAR data:", len(LiDAR_data))
         print("Size of images:", len(images))
         T, K, res, dist_coef = readParams(json_file, cam_idx) # Extrinsic and Intrinsinc matrixes
-        R = np.array([  [0, -1, 0, 0],
-                            [0, 0, -1, 0],
-                            [1, 0, 0, 0],
-                            [0, 0, 0, 1]
-                            ]) # /!\ Rot Matrix from ROS2 to OpenCv Convention
 
-
-        map_cam_orientation = {201:-np.pi/2, 202: np.pi, 203: 0, 204:np.pi, 205: 0} # Orientation of the camera relatively to the MoCap position
-        α = map_cam_orientation[cam_idx]
-        R_z = np.array([[np.cos(α), -np.sin(α), 0, 0],
-                        [np.sin(α), np.cos(α), 0, 0],
-                        [0, 0, 1, 0],
-                        [0, 0, 0, 1]]) # /!\ Rotation Matrix around z-axis (OpenCv convention) applied in the Camera Frame
-
-
-        T_proj = R_z@R@np.linalg.inv(T)
-
-        if png_rotated:
-            # If the images where rotated, the intrinsic parameters must also be changed
-            Rot_pcl = map_pcl_rotation[cam_idx]
-            T_proj = Rot_pcl@T_proj
-            K_old = K
-            K = np.array([[K_old[1, 1], 0.0, res[1]-K_old[1, 2]], [0.0, K_old[0, 0], K_old[0, 2]], [0.0, 0.0, 1.0]])
-
+        T_proj = np.linalg.inv(T) # Points_{cam} = T_cam{ref}⁻¹@ P_{ref}
 
         for i in range(len(images)):
             idx_lidar = get_corresponding_pc_from_image(images[i], LiDAR_pcl_names)
@@ -96,20 +70,16 @@ def project_launch_dataset(png_rotated:bool, path_to_dataset:str):
                     images_choosen.append(img_pc)
         cv.destroyAllWindows()
     print("==========================DISPLAY 5 IMAGES WITH POINTCLOUDS==========================")
-    map_image_rotation = {201:cv.ROTATE_90_CLOCKWISE, 202: cv.ROTATE_90_COUNTERCLOCKWISE, 203: cv.ROTATE_90_COUNTERCLOCKWISE, 204:cv.ROTATE_90_CLOCKWISE, 205: cv.ROTATE_90_CLOCKWISE}
     target_height = 300  # Set your desired height
     resized_images = []
-    if not png_rotated:
-        for k, img in enumerate(images_choosen):
-            rotated = rotate_images(img, map_image_rotation[cam_idxx[k]])
-            h, w = rotated.shape[:2]
-            scale = target_height / h
-            resized_img = cv.resize(rotated, (int(w * scale), target_height))
-            resized_images.append(resized_img)
-        # Concatenate images horizontally
-        concatenated_image = np.hstack(resized_images)
-    else :
-        concatenated_image = np.hstack(images_choosen)
+    for k, img in enumerate(images_choosen):
+        h, w = img.shape[:2]
+        scale = target_height / h
+        resized_img = cv.resize(img, (int(w * scale), target_height))
+        resized_images.append(resized_img)
+    # Concatenate images horizontally
+    concatenated_image = np.hstack(resized_images)
+
 
     # Display the concatenated image
     cv.imshow("All Images", concatenated_image)
@@ -117,29 +87,31 @@ def project_launch_dataset(png_rotated:bool, path_to_dataset:str):
     cv.destroyAllWindows()
 
 
-def project_calibration_dataset(cam_idx:int, path_to_dataset:str):
+def project_calibration_dataset(path_to_dataset:str, cam_idx:int):
     """
     Description:
+
     The `project_launch_dataset` function projects LiDAR point clouds onto synchronized camera images. It aligns LiDAR data with 
     camera frames, and projects the points into each image using the chessboard calibration and the MoCap data to compare the projections.
 
     Inputs:
-    - `png_rotated` (bool): Whether the images chosen are the .png ones, already rotated in the same orientation.
+    - cam_idx : Wanted camera (202, 204, 205)
+    - path_to_dataset : Root direction of the dataset
 
     Outputs:
     - Displays concatenated images with projected point clouds.
     """
     map_lidar_cam = {202:108, 204:178, 205:152}
     calib_folder = f"calib_mocap_lidar_{map_lidar_cam[cam_idx]}_cam_id_{cam_idx}"
-    LiDARs_path = f'{path_to_dataset}/dataset_raw/calibration/{calib_folder}/pointclouds/lidar_192_168_2_{map_lidar_cam[cam_idx]}'
-    MoCap_path = f'{path_to_dataset}/dataset_raw/calibration/{calib_folder}/pointclouds/mocap_poses/'
-    json_file_cam_calib = f"{path_to_dataset}/dataset_raw/calibration/{calib_folder}/results_chessboard_calib/camera_calib.json"
-    json_file_T_cam_Lidar = f"{path_to_dataset}/dataset_raw/calibration/{calib_folder}/results_chessboard_calib/T_Camera_Lidar_weighted.json"
+    LiDARs_path = f'{path_to_dataset}/calibration/{calib_folder}/pointclouds/lidar_192_168_2_{map_lidar_cam[cam_idx]}'
+    MoCap_path = f'{path_to_dataset}/calibration/{calib_folder}/pointclouds/mocap_poses/'
+    json_file_cam_calib = f"{path_to_dataset}/calibration/{calib_folder}/results_chessboard_calib/camera_calib.json"
+    json_file_T_cam_Lidar = f"{path_to_dataset}/calibration/{calib_folder}/results_chessboard_calib/T_Camera_Lidar_weighted.json"
     print(LiDARs_path)
     file_encoding = '.txt'
     LiDAR_pcl_names = []
     LiDAR_data = []
-    images_path = f"{path_to_dataset}/dataset_raw/calibration/{calib_folder}/cam_{cam_idx}/"
+    images_path = f"{path_to_dataset}/calibration/{calib_folder}/cam_{cam_idx}/"
     images = sorted(os.listdir(images_path))
     for file_name in sorted(os.listdir(LiDARs_path)):
         if file_name.endswith(file_encoding):
@@ -191,5 +163,17 @@ def project_calibration_dataset(cam_idx:int, path_to_dataset:str):
     cv.destroyAllWindows()
 
 if __name__ == "__main__":
-    png_rotated = True
-    project_launch_dataset(png_rotated)
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--path_to_dataset", help="Give the absolute root direction of the dataset.", type=str)
+    parser.add_argument("--type", help="Whether you prefer to project a sequence or the calibration data. If sequence, give the sequence number in the argument sequence. If alibration, give the camera index you want to see in calibration argument"
+                        , type=str, default="sequence")
+    parser.add_argument("--sequence", help="The sequence name you want to visualize", default="sequence_00000", type=str)
+    parser.add_argument("--cam_idx", help="The camera index from which you want to visualize the calibration data (202, 204, 205)", default="202", type=str)
+    args = parser.parse_args()
+
+    if args.type == "sequence":
+        project_launch_dataset(args.path_to_dataset, args.sequence)
+    elif args.type == "calibration":
+        project_calibration_dataset(args.path_to_dataset, args.cam_idx)

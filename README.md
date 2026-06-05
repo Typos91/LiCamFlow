@@ -43,9 +43,9 @@ These IDs are the one used in the [utils programs](./utils/).
 
 ### Data Structure
 
-Here is the structure of one sequence of the dataset
+Here is the structure of one sequence of the dataset in its raw version.
 
-```bash
+<!-- ```bash
 .
 ├── cam_201 # Raw .bmp images
 ├── cam_202 # Raw .bmp images
@@ -71,6 +71,20 @@ Here is the structure of one sequence of the dataset
     ├── cam_203 # Re-oriented and converted to .png images
     ├── cam_204 # Re-oriented and converted to .png images
     └── cam_205 # Re-oriented and converted to .png images
+``` -->
+
+```bash
+.
+├── png_images
+│   ├── cam_201
+│   ├── cam_202
+│   ├── cam_203
+│   ├── cam_204
+│   └── cam_205
+├── camera_parameters.json
+└── lidars
+    ├── bag_{date}_full_lidar
+    └── bag_{date}_lidar
 ```
 
 ### Data examples
