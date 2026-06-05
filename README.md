@@ -83,8 +83,8 @@ Here is the structure of one sequence of the dataset in its raw version.
 │   └── cam_205
 ├── camera_parameters.json
 └── lidars
-    ├── bag_{date}_full_lidar
-    └── bag_{date}_lidar
+    ├── bag_{sequence_number}_full_lidar
+    └── bag_{sequence_number}_lidar
 ```
 
 ### Data examples
@@ -149,6 +149,18 @@ Please see this [documentation file](./utils/cpp/smoke_labelling/README.md)
 
 ### Python code
 
-#### 1. bmp2png
+#### 1. Projection
 
-Convert the `.bmp` images into `.png` images
+Project the points given by the lidar LiDAR into each image.
+
+#### 2. Smoke labelize caller
+
+Call the C++ program to labelize and store the extracted smoke pointclouds of each sequence.
+
+#### 3. ROS2 bag reader
+
+Reads the ros2 bags, and extract each message in *.txt* or *.pcd* files
+
+#### 4. PCL and Image utils
+
+Useful functions when manipulating pointclouds and images.
