@@ -139,7 +139,7 @@ Eigen::Vector4f max_box(Eigen::Vector4f center_box, Eigen::Vector4f dimension_bo
 
 int main(int argc, char * argv[]){
     // Read config file 
-    std::ifstream config_file("/home/gperez/Documents/lidar-for-gaussian-physics/lidar/utils/cpp/smoke_labelling/config/arguments.json");
+    std::ifstream config_file(argv[0]);
     if (!config_file.is_open()) {
         std::cerr << "Erreur : impossible d'ouvrir le fichier de configuration." << std::endl;
         return 1;

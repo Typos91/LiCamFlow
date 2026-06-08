@@ -151,15 +151,64 @@ Please see this [documentation file](./utils/cpp/smoke_labelling/README.md)
 
 #### 1. Projection
 
-Project the points given by the lidar LiDAR into each image.
+Projects 3D LiDAR point clouds onto the 2D camera images using known intrinsic and extrinsic calibration parameters, supporting both full sequence visualization and lidar-camera calibration checks.
+
+```bash
+# Project a full sequence
+python pointcloud_projection.py \
+  --path_to_dataset /abs/path/to/dataset \
+  --type sequence \
+  --sequence sequence_00000
+
+# Visualize calibration for a specific camera (available: 202, 204, 205)
+python pointcloud_projection.py \
+  --path_to_dataset /abs/path/to/dataset \
+  --type calibration \
+  --cam_idx 202
+```
+
+In `sequence` mode, the script projects point clouds across all 5 cameras for the specified sequence. In `calibration` mode, it projects chessboard calibration data onto the selected camera to verify pose and intrinsic alignment.
 
 #### 2. Smoke labelize caller
 
-Call the C++ program to labelize and store the extracted smoke pointclouds of each sequence.
+Processes LiDAR point cloud sequences to detect and extract smoke by comparing each frame against a reference octree map built from the first smoke-free frames.
+
+```bash
+python smoke_extraction.py \
+  --path-to-dataset /path/to/dataset \
+  --path-to-config /path/to/config.json \
+  --last-ref-frame 30 \
+  --octree-resolution 0.3 \
+  --angle-max 45 \
+  --box-dimensions 5.0 5.0 6.0 1.0 \
+  --extension-type .pcd
+```
+
+The script iterates over all subfolders in the dataset, updates the config JSON with the relevant paths and parameters, and runs the C++ smoke labelling pipeline on each. Labeled and extracted point clouds are saved respectively in `full_labelized/` and `full_extracted/` under each folder's point cloud directory.
 
 #### 3. ROS2 bag reader
 
-Reads the ros2 bags, and extract each message in *.txt* or *.pcd* files
+Deserializes ROS2 bag files containing LiDAR point clouds and motion capture data, exporting point clouds as individual files.
+
+```bash
+# Extract all sequences
+python deserialize_bags.py \
+  --path-to-dataset /abs/path/to/dataset \
+  --prefix pcd \
+  --naming ts \
+  --smoke-pose 0.0 0.0 0.0 \
+  --type all
+
+# Extract a single sequence
+python deserialize_bags.py \
+  --path-to-dataset /abs/path/to/dataset \
+  --type sequence \
+  --sequence sequence_00000 \
+  --prefix txt \
+  --naming cnt
+```
+
+Files can be named by timestamp (`ts`) or frame count (`cnt`), and saved as `.pcd` or `.txt`. Use `--smoke-pose` to translate point clouds around a known smoke position when working with raw, non-pre-merged lidar data.
 
 #### 4. PCL and Image utils
 

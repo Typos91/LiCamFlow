@@ -223,10 +223,8 @@ def list_bags(bag_path:str):
     print(sorted(bags))
     return sorted(bags)
 
-def main_list():
-    smoke_pose = [0, 0, 0]
-    path_to_dataset = "path/to/dataset"
-    folder_path = f"{path_to_dataset}/dataset_raw/"
+def main_list(path_to_dataset:str, smoke_pose:list, prefix='pcd', name='ts'):
+    folder_path = f"{path_to_dataset}/"
     folders = list_folders(folder_path)
     for folder in folders :
         bag_path = folder_path + folder + "/lidars/"
@@ -234,32 +232,62 @@ def main_list():
         print(len(bags) == len(os.listdir(bag_path)))
         if len(bags) == len(os.listdir(bag_path)):
             if len(bags) == 2:
-                os.makedirs(bag_path+"/full_pointclouds_txt", exist_ok=True)
-                output_full = bag_path+"/full_pointclouds_txt"
-                read_ros2_bag(bag_path + bags[0], output_full, prefix="txt", name="ts", smoke_pose=smoke_pose)
+                os.makedirs(bag_path+"/full_pointclouds", exist_ok=True)
+                output_full = bag_path+"/full_pointclouds"
+                read_ros2_bag(bag_path + bags[0], output_full, prefix=prefix, name=name, smoke_pose=smoke_pose)
                 # ---------------
                 os.makedirs(bag_path+"/pointclouds", exist_ok=True)
                 output_dir = bag_path+"/pointclouds"
-                read_ros2_bag(bag_path + bags[1], output_dir, prefix="txt", name="ts", smoke_pose=smoke_pose)
+                read_ros2_bag(bag_path + bags[1], output_dir, prefix=prefix, name=name, smoke_pose=smoke_pose)
 
             elif len(bags) == 1:
                 os.makedirs(bag_path+"/pointclouds", exist_ok=True)
                 output_dir = bag_path+"/pointclouds"
-                read_ros2_bag(bag_path + bags[0], output_dir, prefix="txt", name="ts", smoke_pose=smoke_pose)
+                read_ros2_bag(bag_path + bags[0], output_dir, prefix=prefix, name=name, smoke_pose=smoke_pose)
 
         else :
             os.makedirs(bag_path+"/pointclouds", exist_ok=True)
             output_dir = bag_path+"/pointclouds"
-            read_ros2_bag(bag_path + bags[1], output_dir, prefix="txt", name="ts", smoke_pose=smoke_pose)
+            read_ros2_bag(bag_path + bags[1], output_dir, prefix=prefix, name=name, smoke_pose=smoke_pose)
 
-def main_alone():
-    smoke_pose = [0, 0, 0]
-    path_to_dataset = "path/to/dataset"
-    sequence_to_deserialize = "launch_2026-02-23_15-14"
-    bag_path = f"{path_to_dataset}/dataset_raw/{sequence_to_deserialize}/lidars/"
-    os.makedirs(bag_path+"/pointclouds", exist_ok=True)
-    output_dir = bag_path+"/pointclouds"
-    read_ros2_bag(bag_path + "bag_2026-02-23_15-14_lidar/", output_dir, prefix="txt", name="ts", smoke_pose=smoke_pose)
+def main_alone(path_to_dataset:str, sequence:str, smoke_pose:list, prefix='pcd', name='ts'):
+    sequence_to_deserialize = sequence
+    bag_path = f"{path_to_dataset}/{sequence_to_deserialize}/lidars/"
+    bags = list_bags(bag_path)
+    if len(bags) == len(os.listdir(bag_path)):
+        if len(bags) == 2:
+            os.makedirs(bag_path+"/full_pointclouds", exist_ok=True)
+            output_full = bag_path+"/full_pointclouds"
+            read_ros2_bag(bag_path + bags[0], output_full, prefix=prefix, name=name, smoke_pose=smoke_pose)
+            # ---------------
+            os.makedirs(bag_path+"/pointclouds", exist_ok=True)
+            output_dir = bag_path+"/pointclouds"
+            read_ros2_bag(bag_path + bags[1], output_dir, prefix=prefix, name=name, smoke_pose=smoke_pose)
+
+        elif len(bags) == 1:
+            os.makedirs(bag_path+"/pointclouds", exist_ok=True)
+            output_dir = bag_path+"/pointclouds"
+            read_ros2_bag(bag_path + bags[0], output_dir, prefix=prefix, name=name, smoke_pose=smoke_pose)
+
+    else :
+        os.makedirs(bag_path+"/pointclouds", exist_ok=True)
+        output_dir = bag_path+"/pointclouds"
+        read_ros2_bag(bag_path + bags[1], output_dir, prefix=prefix, name=name, smoke_pose=smoke_pose)
+
 # Exemple d'utilisation
 if __name__ == '__main__':
-    main_alone()
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--path-to-dataset", help="Give the absolute root direction of the dataset.", type=str)
+    parser.add_argument("--prefix", help="Type of file for storing pointclouds ('pcd' or 'txt')", type=str, default='pcd')
+    parser.add_argument("--naming", help="How to name the pointcloud files, according to the timestamp ('ts') of the count in the sequence ('cnt')", type=str, default='ts')
+    parser.add_argument('--smoke-pose', nargs='*', default=[0.0, 0.0, 0.0], help="Smoke position, to center the pointclouds around smoke if needed. Let it to default value if using already merged lidar data")
+    parser.add_argument("--type", help="Whether you prefer extract a specific sequence or all of them ('sequence' or 'all')."
+                        , type=str, default="all")
+    parser.add_argument("--sequence", help="The sequence name you want to extract", default="sequence_00000", type=str)
+    args = parser.parse_args()
+    if args.type == "sequence":
+        main_alone(args.path_to_dataset, args.sequence, args.smoke_pose, args.prefix, args.naming)
+    elif args.type == "all":
+        main_list(args.path_to_dataset, args.smoke_pose, args.prefix, args.naming)
