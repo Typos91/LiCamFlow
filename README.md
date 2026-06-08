@@ -92,7 +92,7 @@ Here is the structure of one sequence of the dataset in its raw version.
 * Labelised smoke plume in a merged pointcloud :
 ![Labelized smoke plume](./doc/imgs/label_smoke_full.png)
 
-* 5 synchronised images of a smoke plume with pointclouds projected :
+* 5 synchronised images of a smoke plume with pointclouds projected using Motion Capture Extrinsinc parameters :
 ![Projected pointclouds](./doc/imgs/projected_points.png)
 
 ## ᕙ(•̀ ᗜ•́ )ᕗ. Get started
