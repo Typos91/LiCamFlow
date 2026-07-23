@@ -66,7 +66,8 @@ def readParams(json_file : str, cam_idx: int):
     T = np.array(cam["camera_pose"])
     K = np.array(cam["intrinsic_matrix"])
     res = np.array(cam["camera_resolution"])
-    dist_coef = np.array([0.0137242957240467, 0.003027000984213692, 0.001974943800789276, 0.003694050383102309, 0.0003651693407749373]) # Distortion coefficients to get from camera parameters file normally
+    # dist_coef = np.array([0.0137242957240467, 0.003027000984213692, 0.001974943800789276, 0.003694050383102309, 0.0003651693407749373]) # Distortion coefficients to get from camera parameters file normally
+    dist_coef = np.array(cam["dist_coeff"])
     return T, K, res, dist_coef
 
 

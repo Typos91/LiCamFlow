@@ -94,7 +94,7 @@ def read_ros2_bag(bag_path, output_dir, prefix="txt", name="ts", smoke_pose = [0
             raise Exception("Wrong type of file to generate. Choose between '.txt' or '.pcd'.")
 
 
-def save_pointcloud2_to_txt(cloud_msg, filename, smoke_pose = [0, 0, 0]):
+def save_pointcloud2_to_txt(cloud_msg, filename, smoke_pose = [0, 0, 0], r=15):
     field_names = [f.name for f in cloud_msg.fields]
 
     # Vérifie présence de x, y, z
@@ -111,11 +111,11 @@ def save_pointcloud2_to_txt(cloud_msg, filename, smoke_pose = [0, 0, 0]):
             point[field_names.index('z')] -= smoke_pose[2]
             x, y, z = point[field_names.index('x')], point[field_names.index('y')], point[field_names.index('z')]
             norm = math.sqrt(x ** 2 + y ** 2 + z ** 2)
-            if norm > 0 and norm < 13:
+            if norm > 0 and norm < r:
                 # print("Writing point")
                 f.write(','.join(map(str, point)) + '\n')
 
-def save_pointcloud2_to_npy(cloud_msg, filename, smoke_pose=[0, 0, 0]):
+def save_pointcloud2_to_npy(cloud_msg, filename, smoke_pose=[0, 0, 0], r=15):
     field_names = [f.name for f in cloud_msg.fields]
 
     # Check for presence of x, y, z
@@ -134,7 +134,7 @@ def save_pointcloud2_to_npy(cloud_msg, filename, smoke_pose=[0, 0, 0]):
         x, y, z = point_list[field_names.index('x')], point_list[field_names.index('y')], point_list[field_names.index('z')]
         norm = math.sqrt(x ** 2 + y ** 2 + z ** 2)
 
-        if norm > 0 and norm < 13:
+        if norm > 0 and norm < r:
             points.append(point_list)
 
     # Convert to numpy array and save
@@ -156,7 +156,7 @@ def save_mocapposes_to_txt(msg, filename):
             f.write(','.join(map(str, point)) + '\n')
 
 
-def save_pointcloud2_to_pcd(cloud_msg, filename, smoke_pose = [0, 0, 0]):
+def save_pointcloud2_to_pcd(cloud_msg, filename, smoke_pose = [0, 0, 0], r=15):
     field_names = [f.name for f in cloud_msg.fields]
 
     # Vérifie présence de x, y, z
@@ -179,11 +179,11 @@ def save_pointcloud2_to_pcd(cloud_msg, filename, smoke_pose = [0, 0, 0]):
 
         norm = math.sqrt(x ** 2 + y ** 2 + z ** 2)
 
-        if norm > 0 and norm < 13:
+        if norm > 0 and norm < r:
             filtered_points.append(point)
 
     if not filtered_points:
-        print(f"No valid points found for {filename}, skipping.")
+        # print(f"No valid points found for {filename}, skipping.")
         return
 
     # Déduire les informations pour le header PCD
@@ -280,7 +280,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--path-to-dataset", help="Give the absolute root direction of the dataset.", type=str)
-    parser.add_argument("--prefix", help="Type of file for storing pointclouds ('pcd' or 'txt')", type=str, default='pcd')
+    parser.add_argument("--prefix", help="Type of file for storing pointclouds ('pcd' or 'txt')", type=str, default='txt')
     parser.add_argument("--naming", help="How to name the pointcloud files, according to the timestamp ('ts') of the count in the sequence ('cnt')", type=str, default='ts')
     parser.add_argument('--smoke-pose', nargs='*', default=[0.0, 0.0, 0.0], help="Smoke position, to center the pointclouds around smoke if needed. Let it to default value if using already merged lidar data")
     parser.add_argument("--type", help="Whether you prefer extract a specific sequence or all of them ('sequence' or 'all')."

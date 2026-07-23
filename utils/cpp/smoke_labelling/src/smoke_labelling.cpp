@@ -139,7 +139,8 @@ Eigen::Vector4f max_box(Eigen::Vector4f center_box, Eigen::Vector4f dimension_bo
 
 int main(int argc, char * argv[]){
     // Read config file 
-    std::ifstream config_file(argv[0]);
+    std::ifstream config_file(argv[1]);
+    std::cout << "Opening config file : " << argv[1] <<std::endl;
     if (!config_file.is_open()) {
         std::cerr << "Erreur : impossible d'ouvrir le fichier de configuration." << std::endl;
         return 1;
@@ -149,11 +150,17 @@ int main(int argc, char * argv[]){
     // Define the variables
 
     float angle_max = config["data_args"]["angle_max"]; // Max angle where the smoke is supposed to be  (in degree)
+    // std::cout << "Angle max : " << angle_max <<std::endl;
     int ts1 = 0; int ts2 = config["data_args"]["last_ref_frame"]; // Numero of the files delimiting the reference poincloud
+    // std::cout << "Last ref frame : " << ts2 <<std::endl;
     fs::path folder_path = config["data_directions"]["input"]["path"];
+    // std::cout << "Folder path : " << folder_path <<std::endl;
     fs::path saving_path = config["data_directions"]["output"]["path"];
+    // std::cout << "Saving path : " << saving_path <<std::endl;
     fs::path saving_path_extracted = config["data_directions"]["output_extracted"]["path"];
+    // std::cout << "Savinbg path extracted : " << saving_path_extracted <<std::endl;
     float resolution = config["data_args"]["octree_resolution"];
+    // std::cout << "Résolution de l'octree : " << resolution <<std::endl;
     std::vector<float> center = config["data_args"]["smoke_pose"].get<std::vector<float>>();
     Eigen::Vector4f box_center(center.data());
     // std::cout << "Box center : " << "x = " << box_center[0] << ";y = " << box_center[1] << ";z = " << box_center[2] << std::endl;
@@ -171,6 +178,7 @@ int main(int argc, char * argv[]){
     pcl::IndicesPtr IdxVector(new std::vector<int>());
     int count = 0; // Number of pointclouds in directory 
     fs::path extension(config["data_args"]["extension_type"]);
+    std::cout << "Chosen extension : " << extension <<std::endl;
 
     /*-----------------------------------Get the files--------------------------------------------------*/
     // First we count the number of files, before storing them inside a vector
@@ -189,6 +197,7 @@ int main(int argc, char * argv[]){
 
     /*--------------------------------------PointCloud processing--------------------------------------*/
     // Creating the reference point cloud (without smoke)
+    std::cout << "READING CLOUDS" << endl;
     ref_cloud = referencePointCloud(ts1, ts2, folder_path, txt_pointclouds);
     std::cout << "SIZE OF REF_CLOUD : " << ref_cloud->size() << endl;
 

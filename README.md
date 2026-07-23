@@ -174,17 +174,32 @@ In `sequence` mode, the script projects point clouds across all 5 cameras for th
 Processes LiDAR point cloud sequences to detect and extract smoke by comparing each frame against a reference octree map built from the first smoke-free frames.
 
 ```bash
-python smoke_extraction.py \
-  --path-to-dataset /path/to/dataset \
-  --path-to-config /path/to/config.json \
-  --last-ref-frame 30 \
-  --octree-resolution 0.3 \
-  --angle-max 45 \
-  --box-dimensions 5.0 5.0 6.0 1.0 \
-  --extension-type .pcd
+python smoke_labelize_caller.py  \
+--path-to-dataset /path/to/dataset \
+--path-to-config /path/to/config/arguments.json \
+--last-ref-frame 30 \
+--octree-resolution 0.3 \
+--angle-max 45 \
+--box-dimension 5.0 5.0 6.0 1.0 \
+--extension-type .pcd \
 ```
 
 The script iterates over all subfolders in the dataset, updates the config JSON with the relevant paths and parameters, and runs the C++ smoke labelling pipeline on each. Labeled and extracted point clouds are saved respectively in `full_labelized/` and `full_extracted/` under each folder's point cloud directory.
+
+For extracting smoke of only one file, add the `type` argument as `sequence` name of the sequence you want to extract like so :
+
+```bash
+python smoke_labelize_caller.py  \
+--path-to-dataset /path/to/dataset \
+--path-to-config /path/to/config/arguments.json \
+--last-ref-frame 30 \
+--octree-resolution 0.3 \
+--angle-max 45 \
+--box-dimension 5.0 5.0 6.0 1.0 \
+--extension-type .pcd \
+--type sequence \
+--sequence "sequence_00007"
+```
 
 #### 3. ROS2 bag reader
 
@@ -192,20 +207,19 @@ Deserializes ROS2 bag files containing LiDAR point clouds and motion capture dat
 
 ```bash
 # Extract all sequences
-python deserialize_bags.py \
-  --path-to-dataset /abs/path/to/dataset \
-  --prefix pcd \
-  --naming ts \
-  --smoke-pose 0.0 0.0 0.0 \
-  --type all
+python ros2bag_reader.py \
+--path-to-dataset /path/to/dataset \
+--prefix txt \
+--naming ts \
+--type all
 
 # Extract a single sequence
-python deserialize_bags.py \
-  --path-to-dataset /abs/path/to/dataset \
-  --type sequence \
-  --sequence sequence_00000 \
-  --prefix txt \
-  --naming cnt
+python ros2bag_reader.py \
+--path-to-dataset /path/to/dataset \
+--type sequence \
+--sequence sequence_00000 \
+--prefix txt \
+--naming cnt
 ```
 
 Files can be named by timestamp (`ts`) or frame count (`cnt`), and saved as `.pcd` or `.txt`. Use `--smoke-pose` to translate point clouds around a known smoke position when working with raw, non-pre-merged lidar data.

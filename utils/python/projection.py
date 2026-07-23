@@ -166,7 +166,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--path_to_dataset", help="Give the absolute root direction of the dataset.", type=str)
+    parser.add_argument("--path-to-dataset", help="Give the absolute root direction of the dataset.", type=str)
     parser.add_argument("--type", help="Whether you prefer to project a sequence or the calibration data. If sequence, give the sequence number in the argument sequence. If alibration, give the camera index you want to see in calibration argument"
                         , type=str, default="sequence")
     parser.add_argument("--sequence", help="The sequence name you want to visualize", default="sequence_00000", type=str)
