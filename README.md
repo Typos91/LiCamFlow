@@ -155,16 +155,16 @@ Projects 3D LiDAR point clouds onto the 2D camera images using known intrinsic a
 
 ```bash
 # Project a full sequence
-python pointcloud_projection.py \
-  --path_to_dataset /abs/path/to/dataset \
-  --type sequence \
-  --sequence sequence_00000
+python projection.py \
+--path-to-dataset /abs/path/to/dataset \
+--type sequence \
+--sequence sequence_00000
 
 # Visualize calibration for a specific camera (available: 202, 204, 205)
-python pointcloud_projection.py \
-  --path_to_dataset /abs/path/to/dataset \
-  --type calibration \
-  --cam_idx 202
+python projection.py \
+--path-to-dataset /abs/path/to/dataset \
+--type calibration \
+--cam_idx 202
 ```
 
 In `sequence` mode, the script projects point clouds across all 5 cameras for the specified sequence. In `calibration` mode, it projects chessboard calibration data onto the selected camera to verify pose and intrinsic alignment.

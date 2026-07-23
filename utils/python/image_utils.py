@@ -62,7 +62,7 @@ def readParams(json_file : str, cam_idx: int):
     """
     with open(json_file, "r") as f:
         data = json.load(f)
-    cam = data[f"cam_{cam_idx}"]
+    cam = data[f"{cam_idx}"]
     T = np.array(cam["camera_pose"])
     K = np.array(cam["intrinsic_matrix"])
     res = np.array(cam["camera_resolution"])

@@ -36,7 +36,7 @@ def project_launch_dataset(path_to_dataset:str, sequence:str):
     - Displays concatenated images with projected point clouds.
     """
     sequence_file = sequence
-    LiDARs_path = f'{path_to_dataset}/{sequence_file}/lidars/full_pointclouds_txt/full_extracted/'
+    LiDARs_path = f'{path_to_dataset}/{sequence_file}/lidars/full_pointclouds/full_extracted/'
     json_file = f"{path_to_dataset}/{sequence_file}/camera_parameters.json"
     file_encoding = '.pcd'
     cam_idxx = [201, 202, 203, 204, 205]
@@ -66,7 +66,7 @@ def project_launch_dataset(path_to_dataset:str, sequence:str):
             if type(LiDAR_data[idx_lidar][0]) == np.ndarray and type(LiDAR_data[idx_lidar][1])==np.ndarray:
                 print(f"Index :{i+1}/{len(images)}")
                 img_pc = display_points_in_image(os.path.join(images_path, images[i]), K, LiDAR_data[idx_lidar][0], LiDAR_data[idx_lidar][1], T_proj, cam_idx, dist_coef)
-                if i == 300:
+                if i == 200:
                     images_choosen.append(img_pc)
         cv.destroyAllWindows()
     print("==========================DISPLAY 5 IMAGES WITH POINTCLOUDS==========================")
@@ -79,7 +79,6 @@ def project_launch_dataset(path_to_dataset:str, sequence:str):
         resized_images.append(resized_img)
     # Concatenate images horizontally
     concatenated_image = np.hstack(resized_images)
-
 
     # Display the concatenated image
     cv.imshow("All Images", concatenated_image)
@@ -126,10 +125,6 @@ def project_calibration_dataset(path_to_dataset:str, cam_idx:int):
     T = readT_cam_Lidar(json_file_T_cam_Lidar) # Extrinsic and Intrinsinc matrixes
     K, dist_coeff = readT_cam_calib(json_file_cam_calib)
 
-
-    # image = images[100]
-    # lidar = LiDAR_data[100][0]
-    # intensity = LiDAR_data[100][1]
     for i in range(len(images)):
         idx_lidar = get_corresponding_pc_from_image(images[i], LiDAR_pcl_names)
         print("Lidar choosen : ", LiDAR_pcl_names[idx_lidar])
