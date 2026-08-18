@@ -1,0 +1,35 @@
+{
+    "data_directions": {
+        "input": {
+            "path": "/home/gperez/Documents/data/dataset_good_format/sequence_00007/lidars/full_pointclouds//full_cloud",
+            "description": "Dossier pour r\u00e9cup\u00e9rer les donn\u00e9es d'entr\u00e9e."
+        },
+        "output": {
+            "path": "/home/gperez/Documents/data/dataset_good_format/sequence_00007/lidars/full_pointclouds/full_labelized/",
+            "description": "Dossier pour sauvegarder les donn\u00e9es de sortie."
+        },
+        "output_extracted": {
+            "path": "/home/gperez/Documents/data/dataset_good_format/sequence_00007/lidars/full_pointclouds/full_extracted/",
+            "description": "Dossier pour sauvegarder les donn\u00e9es de sortie."
+        }
+    },
+    "data_args": {
+        "angle_max": 45,
+        "last_ref_frame": 30,
+        "octree_resolution": 0.3,
+        "extension_type": ".pcd",
+        "box_dimensions": [
+            5.0,
+            5.0,
+            6.0,
+            1.0
+        ],
+        "smoke_pose": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "description": "- angle_max : Maximul FOV of the LiDAR data.\\- last_ref_frame : Last frame used to build the reference map.\\- octree_resolution : resolution of the voxel grid\\- extension_type : type of file generated as output."
+    }
+}

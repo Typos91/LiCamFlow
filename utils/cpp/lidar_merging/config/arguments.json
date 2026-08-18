@@ -1,0 +1,18 @@
+{
+    "data_directions": {
+        "input": {
+            "path": "/home/gperez/Documents/data/dataset_raw/launch_wind_2026-03-12_17-59/lidars/pointclouds/",
+            "description": "Dossier pour r\u00e9cup\u00e9rer les donn\u00e9es d'entr\u00e9e."
+        },
+        "output": {
+            "path": "/home/gperez/Documents/data/dataset_raw/launch_wind_2026-03-12_17-59/lidars/pointclouds/",
+            "description": "Dossier pour sauvegarder les donn\u00e9es de sortie."
+        }
+    },
+    "data_args": {
+        "ref_id":0,
+        "map_ids": {"108":202, "178":204, "152":205, "0":206},
+        "extension_type": ".txt",
+        "description": "- angle_max : Maximul FOV of the LiDAR data.\n- last_ref_frame : Last frame used to build the reference map.\n- octree_resolution : resolution of the voxel grid\n- extension_type : type of file generated as output."
+    }
+}
