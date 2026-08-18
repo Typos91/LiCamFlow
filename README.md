@@ -2,7 +2,7 @@
 
 LiCamFlow is a multi-view and multi-LiDAR dataset of smoke plume in different environments. The setup consists in 5 cameras + 3 LiDARs disposed around a fog machine used to generate the plume.
 
-This repository gives some tools to use the dataset.
+This repository gives some tools to use the dataset, the dataset will be released and accessible from this repo.
 
 **Gaétan Pérez**, **Lou Denis**
 
